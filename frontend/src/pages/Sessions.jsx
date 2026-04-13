@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2, AlertTriangle } from 'lucide-react';
+import { Pencil, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -10,7 +10,7 @@ import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Skeleton } from '../components/ui/skeleton';
-import { getSessions, updateSession, deleteSession } from '../lib/api';
+import { getSessions, createSession, updateSession, deleteSession } from '../lib/api';
 import { formatCurrency, formatDateUi, formatDurationHours } from '../lib/utils';
 
 export function Sessions() {
@@ -27,6 +27,8 @@ export function Sessions() {
 
   const [editRow, setEditRow] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ date: '', title: '', durationHours: '1.5' });
 
   const params = useMemo(
     () => ({
@@ -53,6 +55,18 @@ export function Sessions() {
       qc.invalidateQueries({ queryKey: ['monthly'] });
       toast.success('Session updated');
       setEditRow(null);
+    },
+    onError: (e) => toast.error(e.response?.data?.error || e.message),
+  });
+
+  const mutCreate = useMutation({
+    mutationFn: (body) => createSession(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sessions'] });
+      qc.invalidateQueries({ queryKey: ['summary'] });
+      qc.invalidateQueries({ queryKey: ['monthly'] });
+      toast.success('Session added');
+      setAddOpen(false);
     },
     onError: (e) => toast.error(e.response?.data?.error || e.message),
   });
@@ -90,11 +104,23 @@ export function Sessions() {
     }
   }
 
+  function openAddDialog() {
+    const today = new Date().toISOString().slice(0, 10);
+    setAddForm({ date: today, title: '', durationHours: '1.5' });
+    setAddOpen(true);
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Sessions</h1>
-        <p className="text-sm text-slate-500">Calendar-derived teaching sessions and earnings.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Sessions</h1>
+          <p className="text-sm text-slate-500">Teaching sessions from calendar sync, .ics import, or manual entry.</p>
+        </div>
+        <Button onClick={openAddDialog}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add session
+        </Button>
       </div>
 
       <Card>
@@ -217,6 +243,60 @@ export function Sessions() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog
+        open={addOpen}
+        onOpenChange={(o) => {
+          setAddOpen(o);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add session</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <p className="text-xs text-slate-500">
+              Start time is fixed at 09:00 in your configured timezone (Settings). Title rules match calendar sync
+              (groups, private courses, diplomas).
+            </p>
+            <div>
+              <Label>Date</Label>
+              <Input type="date" value={addForm.date} onChange={(e) => setAddForm({ ...addForm, date: e.target.value })} />
+            </div>
+            <div>
+              <Label>Title</Label>
+              <Input
+                value={addForm.title}
+                onChange={(e) => setAddForm({ ...addForm, title: e.target.value })}
+                placeholder="e.g. Group A - Topic"
+              />
+            </div>
+            <div>
+              <Label>Duration (hours)</Label>
+              <Input
+                type="number"
+                step="0.25"
+                min="0.25"
+                max="168"
+                value={addForm.durationHours}
+                onChange={(e) => setAddForm({ ...addForm, durationHours: e.target.value })}
+              />
+            </div>
+            <Button
+              disabled={mutCreate.isPending}
+              onClick={() =>
+                mutCreate.mutate({
+                  date: addForm.date,
+                  title: addForm.title,
+                  durationHours: Number(addForm.durationHours),
+                })
+              }
+            >
+              {mutCreate.isPending ? 'Saving…' : 'Save session'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editRow} onOpenChange={() => setEditRow(null)}>
         <DialogContent>

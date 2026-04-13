@@ -3,6 +3,9 @@
  */
 const express = require('express');
 const { getDatabase } = require('../db/database');
+const { readConfig } = require('../services/configService');
+const { buildManualRawEvent } = require('../services/calculatorService');
+const { applyRawEventsToDatabase } = require('../services/sessionSyncLogic');
 
 const router = express.Router();
 
@@ -84,7 +87,7 @@ router.get('/', (req, res) => {
 
   const whereSql = conditions.join(' AND ');
   const countRow = db.prepare(`SELECT COUNT(*) AS c FROM sessions WHERE ${whereSql}`).get(...params);
-  const total = countRow.c;
+  const total = Number(countRow.c);
 
   const rows = db
     .prepare(
@@ -109,6 +112,21 @@ router.get('/', (req, res) => {
       totalEarnings: Math.round(Number(sumRow.e) * 100) / 100,
     },
   });
+});
+
+/** Manual session (no Google Calendar API). Body: { date, title, durationHours } */
+router.post('/', (req, res) => {
+  const config = readConfig();
+  const raw = buildManualRawEvent(req.body || {}, config);
+  const db = getDatabase();
+  applyRawEventsToDatabase(db, [raw]);
+  const row = db.prepare('SELECT * FROM sessions WHERE calendar_event_id = ?').get(raw.calendarEventId);
+  if (!row) {
+    const err = new Error('Failed to create session');
+    err.status = 500;
+    throw err;
+  }
+  res.status(201).json(mapSession(row));
 });
 
 router.put('/:id', (req, res) => {

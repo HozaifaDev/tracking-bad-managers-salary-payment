@@ -23,6 +23,29 @@ export async function getSessions(params) {
   return data;
 }
 
+export async function createSession(body) {
+  const { data } = await api.post('/sessions', body);
+  return data;
+}
+
+export async function importIcsFile(file, { from, to } = {}) {
+  const form = new FormData();
+  form.append('file', file);
+  const params = {};
+  if (from) params.from = from;
+  if (to) params.to = to;
+  const { data } = await axios.post('/api/import/ics', form, { params });
+  return data;
+}
+
+export async function importIcsPaste(ics, { from, to } = {}) {
+  const payload = { ics };
+  if (from) payload.from = from;
+  if (to) payload.to = to;
+  const { data } = await api.post('/import/ics', payload);
+  return data;
+}
+
 export async function updateSession(id, body) {
   const { data } = await api.put(`/sessions/${id}`, body);
   return data;

@@ -8,8 +8,16 @@ const readline = require('readline');
 const { createOAuthClient, SCOPES, tokenPath, credentialsPath } = require('../services/calendarService');
 
 async function main() {
-  if (!fs.existsSync(credentialsPath())) {
-    console.error('Missing backend/credentials.json — download OAuth Desktop JSON from Google Cloud Console.');
+  const credsFile = credentialsPath();
+  if (!fs.existsSync(credsFile)) {
+    console.error(
+      'Missing OAuth client file.\n\n' +
+        '1) Google Cloud Console → APIs & Services → Credentials\n' +
+        '2) Create OAuth client ID → Application type: Desktop app\n' +
+        '3) Download JSON and save it as:\n\n' +
+        `   ${credsFile}\n\n` +
+        '(Same folder as backend/package.json — name must be credentials.json)',
+    );
     process.exit(1);
   }
 

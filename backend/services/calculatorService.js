@@ -2,6 +2,7 @@
  * Classifies calendar titles and computes per-session earnings + salary cycle fields.
  * Mirrors the Python CLI rules: groups, private courses (fixed on COMPLETE), diplomas.
  */
+const { randomUUID } = require('crypto');
 const {
   format,
   parse,
@@ -9,6 +10,8 @@ const {
   addDays,
 } = require('date-fns');
 const { enUS } = require('date-fns/locale');
+const { formatInTimeZone } = require('date-fns-tz');
+const { DateTime } = require('luxon');
 
 /**
  * Salary month label e.g. "December 2024" from a calendar date string YYYY-MM-DD.
@@ -213,10 +216,55 @@ function buildSessionRow(rawEvent, config) {
   };
 }
 
+/**
+ * Build a raw event object for a user-entered session (no Google / ICS).
+ * Uses fixed local start time 09:00 in config timezone for date + duration.
+ */
+function buildManualRawEvent({ date, title, durationHours }, config) {
+  const tz = config.timezone || 'Africa/Cairo';
+  const dur = Number(durationHours);
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
+    const err = new Error('date must be YYYY-MM-DD');
+    err.status = 400;
+    throw err;
+  }
+  if (!String(title || '').trim()) {
+    const err = new Error('title is required');
+    err.status = 400;
+    throw err;
+  }
+  if (!Number.isFinite(dur) || dur <= 0 || dur > 168) {
+    const err = new Error('durationHours must be a positive number up to 168');
+    err.status = 400;
+    throw err;
+  }
+
+  const start = DateTime.fromISO(`${date}T09:00:00`, { zone: tz });
+  if (!start.isValid) {
+    const err = new Error('invalid date');
+    err.status = 400;
+    throw err;
+  }
+  const end = start.plus({ hours: dur });
+  const startJs = start.toJSDate();
+  const endJs = end.toJSDate();
+
+  return {
+    calendarEventId: `manual-${randomUUID()}`,
+    title: String(title).trim(),
+    date: String(date),
+    dayOfWeek: formatInTimeZone(startJs, tz, 'EEEE', { locale: enUS }),
+    startTime: startJs.toISOString(),
+    endTime: endJs.toISOString(),
+    durationHours: Math.round(dur * 100) / 100,
+  };
+}
+
 module.exports = {
   getSalaryMonth,
   getCycleRange,
   classifyTitle,
   buildSessionRow,
   findDiplomaPayout,
+  buildManualRawEvent,
 };
