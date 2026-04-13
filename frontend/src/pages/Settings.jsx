@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Separator } from '../components/ui/separator';
 import { Skeleton } from '../components/ui/skeleton';
-import { getConfig, saveConfig } from '../lib/api';
+import { getConfig, saveConfig, resetData } from '../lib/api';
 
 export function Settings() {
   const qc = useQueryClient();
@@ -25,6 +25,19 @@ export function Settings() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['config'] });
       toast.success('Config saved!');
+    },
+    onError: (e) => toast.error(e.response?.data?.error || e.message),
+  });
+
+  const mutReset = useMutation({
+    mutationFn: ({ scope }) => resetData({ scope }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sessions'] });
+      qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['summary'] });
+      qc.invalidateQueries({ queryKey: ['monthly'] });
+      qc.invalidateQueries({ queryKey: ['sync-log'] });
+      toast.success('Data reset complete');
     },
     onError: (e) => toast.error(e.response?.data?.error || e.message),
   });
@@ -473,6 +486,41 @@ export function Settings() {
       <Button size="lg" onClick={() => mut.mutate(cfg)} disabled={mut.isPending}>
         Save configuration
       </Button>
+
+      <Card className="border-rose-200">
+        <CardHeader>
+          <CardTitle className="text-base text-rose-700">Danger zone</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-slate-600">
+            This will permanently delete your local data. Configuration (config.json) is not affected.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="destructive"
+              disabled={mutReset.isPending}
+              onClick={() => {
+                const v = prompt('Type RESET to delete ALL data (sessions + payments + sync history).');
+                if (v !== 'RESET') return;
+                mutReset.mutate({ scope: 'all' });
+              }}
+            >
+              Reset all data
+            </Button>
+            <Button
+              variant="outline"
+              disabled={mutReset.isPending}
+              onClick={() => {
+                const v = prompt('Type RESET to delete sessions + sync history (payments kept).');
+                if (v !== 'RESET') return;
+                mutReset.mutate({ scope: 'sessions' });
+              }}
+            >
+              Reset sessions only
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

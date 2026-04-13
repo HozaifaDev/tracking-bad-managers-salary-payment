@@ -17,6 +17,7 @@ const syncRouter = require('./routes/sync');
 const reportsRouter = require('./routes/reports');
 const configRouter = require('./routes/config');
 const importRouter = require('./routes/import');
+const adminRouter = require('./routes/admin');
 
 // Touch DB early so migrations run before first request
 getDatabase();
@@ -38,6 +39,7 @@ app.use('/api/sync', syncRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/config', configRouter);
 app.use('/api/import', importRouter);
+app.use('/api/admin', adminRouter);
 
 app.use(errorHandler);
 
