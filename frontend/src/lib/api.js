@@ -99,6 +99,11 @@ export async function saveConfig(cfg) {
   return data;
 }
 
+export async function resetData({ scope = 'all' } = {}) {
+  const { data } = await api.post('/admin/reset', { confirm: 'RESET', scope });
+  return data;
+}
+
 export function getExportUrl(from, to) {
   const q = new URLSearchParams();
   if (from) q.set('from', from);
