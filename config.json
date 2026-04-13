@@ -1,0 +1,59 @@
+{
+  "timezone": "Africa/Cairo",
+  "work_cycle_start_day": 25,
+  "currency": "EGP",
+  "groups": {
+    "Group A": {
+      "type": "regular",
+      "platform": "online",
+      "rate_per_hour": 175,
+      "color": "#6366f1"
+    },
+    "Group B": {
+      "type": "regular",
+      "platform": "onsite",
+      "rate_per_hour": 200,
+      "color": "#10b981"
+    }
+  },
+  "private_courses": {
+    "default_split_instructor": 0.50,
+    "default_hourly_rate": 300,
+    "overrides": {
+      "Private Course: SQL": {
+        "fixed_instructor_amount": 6000,
+        "total_course_amount": 10000,
+        "note": "Fixed deal negotiated"
+      }
+    }
+  },
+  "diplomas": {
+    "Data Analysis": {
+      "color": "#f59e0b",
+      "milestones": {
+        "Excel": 2000,
+        "SQL": 2000,
+        "Power BI": 2000,
+        "Python": 2000
+      }
+    },
+    "Data Science": {
+      "color": "#ec4899",
+      "milestones": {
+        "Python": 2500,
+        "Statistics": 2500,
+        "ML": 2500,
+        "Deployment": 2500
+      }
+    },
+    "Data Engineering": {
+      "color": "#3b82f6",
+      "milestones": {
+        "SQL Advanced": 3000,
+        "dbt": 3000,
+        "Airflow": 3000,
+        "Spark": 3000
+      }
+    }
+  }
+}

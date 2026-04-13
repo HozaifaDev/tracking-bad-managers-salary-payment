@@ -1,0 +1,17 @@
+token.json
+events_cache.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+node_modules/
+dist/
+tracker.db
+backend/token.json
+backend/credentials.json
+backend/tracker.db
+*.db-shm
+*.db-wal
+*.log
+.DS_Store
