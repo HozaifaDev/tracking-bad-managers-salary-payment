@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: salary-tracker-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: salary-tracker-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CONFIG_PATH
+        value: ../config.json
+
+databases:
+  - name: salary-tracker-db
+    databaseName: salary_tracker
+    plan: free

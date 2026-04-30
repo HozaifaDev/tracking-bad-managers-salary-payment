@@ -1,6 +1,3 @@
-/**
- * POST /api/calendar/sync — fetch Google Calendar and insert new sessions only.
- */
 const fs = require('fs');
 const express = require('express');
 const { getDatabase } = require('../db/database');
@@ -24,7 +21,8 @@ router.post('/sync', async (req, res) => {
     throw err;
   }
 
-  const db = getDatabase();
+  const db = await getDatabase();
+  const userId = req.user.id;
   let fetched = 0;
   let newCount = 0;
   let skipped = 0;
@@ -34,28 +32,24 @@ router.post('/sync', async (req, res) => {
     const events = await fetchCalendarEvents(from, to);
     fetched = events.length;
 
-    const result = applyRawEventsToDatabase(db, events);
+    const result = await applyRawEventsToDatabase(db, events, userId);
     newCount = result.newCount;
     skipped = result.skipped;
     result.flaggedTitles.forEach((t) => flaggedTitles.add(t));
 
-    db.prepare(
-      `INSERT INTO sync_log (range_from, range_to, events_fetched, new_sessions, skipped, status)
-       VALUES (?, ?, ?, ?, ?, 'success')`,
-    ).run(from, to, fetched, newCount, skipped);
+    await db.run(
+      `INSERT INTO sync_log (user_id, range_from, range_to, events_fetched, new_sessions, skipped, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'success')`,
+      [userId, from, to, fetched, newCount, skipped],
+    );
 
-    res.json({
-      fetched,
-      new: newCount,
-      skipped,
-      flagged: flaggedTitles.size,
-      flaggedTitles: [...flaggedTitles],
-    });
+    res.json({ fetched, new: newCount, skipped, flagged: flaggedTitles.size, flaggedTitles: [...flaggedTitles] });
   } catch (e) {
-    db.prepare(
-      `INSERT INTO sync_log (range_from, range_to, events_fetched, new_sessions, skipped, status, error_message)
-       VALUES (?, ?, ?, ?, ?, 'error', ?)`,
-    ).run(from, to, fetched, newCount, skipped, e.message);
+    await db.run(
+      `INSERT INTO sync_log (user_id, range_from, range_to, events_fetched, new_sessions, skipped, status, error_message)
+       VALUES (?, ?, ?, ?, ?, ?, 'error', ?)`,
+      [userId, from, to, fetched, newCount, skipped, e.message],
+    );
     throw e;
   }
 });

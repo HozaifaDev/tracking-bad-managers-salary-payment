@@ -1,6 +1,3 @@
-/**
- * Session CRUD + filtered pagination (50 per page) and server-side sort.
- */
 const express = require('express');
 const { getDatabase } = require('../db/database');
 const { readConfig } = require('../services/configService');
@@ -10,15 +7,8 @@ const { applyRawEventsToDatabase } = require('../services/sessionSyncLogic');
 const router = express.Router();
 
 const SORTABLE = new Set([
-  'date',
-  'title',
-  'category',
-  'duration_hours',
-  'rate_applied',
-  'earnings',
-  'salary_month',
-  'flagged',
-  'id',
+  'date', 'title', 'category', 'duration_hours',
+  'rate_applied', 'earnings', 'salary_month', 'flagged', 'id',
 ]);
 
 function mapSession(r) {
@@ -48,58 +38,40 @@ function mapSession(r) {
   };
 }
 
-router.get('/', (req, res) => {
-  const db = getDatabase();
+router.get('/', async (req, res) => {
+  const db = await getDatabase();
+  const userId = req.user.id;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const limit = 50;
   const offset = (page - 1) * limit;
 
-  const conditions = ['1=1'];
-  const params = [];
+  const conditions = ['user_id = ?'];
+  const params = [userId];
 
-  if (req.query.from) {
-    conditions.push('date >= ?');
-    params.push(req.query.from);
-  }
-  if (req.query.to) {
-    conditions.push('date <= ?');
-    params.push(req.query.to);
-  }
-  if (req.query.category) {
-    conditions.push('category = ?');
-    params.push(req.query.category);
-  }
-  if (req.query.salaryMonth) {
-    conditions.push('salary_month = ?');
-    params.push(req.query.salaryMonth);
-  }
-  if (req.query.flagged === '1' || req.query.flagged === 'true') {
-    conditions.push('flagged = 1');
-  }
-  if (req.query.search) {
-    conditions.push('title LIKE ?');
-    params.push(`%${req.query.search}%`);
-  }
+  if (req.query.from) { conditions.push('date >= ?'); params.push(req.query.from); }
+  if (req.query.to) { conditions.push('date <= ?'); params.push(req.query.to); }
+  if (req.query.category) { conditions.push('category = ?'); params.push(req.query.category); }
+  if (req.query.salaryMonth) { conditions.push('salary_month = ?'); params.push(req.query.salaryMonth); }
+  if (req.query.flagged === '1' || req.query.flagged === 'true') { conditions.push('flagged = 1'); }
+  if (req.query.search) { conditions.push('title LIKE ?'); params.push(`%${req.query.search}%`); }
 
   let sortBy = req.query.sortBy || 'date';
   if (!SORTABLE.has(sortBy)) sortBy = 'date';
   const sortDir = req.query.sortDir === 'desc' ? 'DESC' : 'ASC';
+  const where = conditions.join(' AND ');
 
-  const whereSql = conditions.join(' AND ');
-  const countRow = db.prepare(`SELECT COUNT(*) AS c FROM sessions WHERE ${whereSql}`).get(...params);
+  const countRow = await db.get(`SELECT COUNT(*) AS c FROM sessions WHERE ${where}`, params);
   const total = Number(countRow.c);
 
-  const rows = db
-    .prepare(
-      `SELECT * FROM sessions WHERE ${whereSql} ORDER BY ${sortBy} ${sortDir}, id ASC LIMIT ? OFFSET ?`,
-    )
-    .all(...params, limit, offset);
+  const rows = await db.all(
+    `SELECT * FROM sessions WHERE ${where} ORDER BY ${sortBy} ${sortDir}, id ASC LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
+  );
 
-  const sumRow = db
-    .prepare(
-      `SELECT COALESCE(SUM(duration_hours),0) AS h, COALESCE(SUM(earnings),0) AS e FROM sessions WHERE ${whereSql}`,
-    )
-    .get(...params);
+  const sumRow = await db.get(
+    `SELECT COALESCE(SUM(duration_hours),0) AS h, COALESCE(SUM(earnings),0) AS e FROM sessions WHERE ${where}`,
+    params,
+  );
 
   res.json({
     data: rows.map(mapSession),
@@ -114,13 +86,15 @@ router.get('/', (req, res) => {
   });
 });
 
-/** Manual session (no Google Calendar API). Body: { date, title, durationHours } */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const config = readConfig();
   const raw = buildManualRawEvent(req.body || {}, config);
-  const db = getDatabase();
-  applyRawEventsToDatabase(db, [raw]);
-  const row = db.prepare('SELECT * FROM sessions WHERE calendar_event_id = ?').get(raw.calendarEventId);
+  const db = await getDatabase();
+  await applyRawEventsToDatabase(db, [raw], req.user.id);
+  const row = await db.get(
+    'SELECT * FROM sessions WHERE calendar_event_id = ? AND user_id = ?',
+    [raw.calendarEventId, req.user.id],
+  );
   if (!row) {
     const err = new Error('Failed to create session');
     err.status = 500;
@@ -129,10 +103,10 @@ router.post('/', (req, res) => {
   res.status(201).json(mapSession(row));
 });
 
-router.put('/:id', (req, res) => {
-  const db = getDatabase();
+router.put('/:id', async (req, res) => {
+  const db = await getDatabase();
   const id = parseInt(req.params.id, 10);
-  const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
+  const row = await db.get('SELECT * FROM sessions WHERE id = ? AND user_id = ?', [id, req.user.id]);
   if (!row) {
     const err = new Error('Session not found');
     err.status = 404;
@@ -147,27 +121,33 @@ router.put('/:id', (req, res) => {
   if (body.category !== undefined) pairs.push(['category', String(body.category)]);
   if (body.rateApplied !== undefined) pairs.push(['rate_applied', Number(body.rateApplied)]);
 
-  const updates = [];
-  const vals = [];
-  for (const [col, v] of pairs) {
-    updates.push(`${col} = ?`);
-    vals.push(v);
+  if (!pairs.length) return res.json(mapSession(row));
+
+  const setClauses = pairs.map(([col]) => `${col} = ?`);
+  const vals = pairs.map(([, v]) => v);
+
+  if (db.type === 'sqlite') {
+    setClauses.push("updated_at = datetime('now')");
+  } else {
+    setClauses.push('updated_at = NOW()');
   }
-  if (!updates.length) {
-    return res.json(mapSession(row));
-  }
-  updates.push("updated_at = datetime('now')");
-  vals.push(id);
-  db.prepare(`UPDATE sessions SET ${updates.join(', ')} WHERE id = ?`).run(...vals);
-  const next = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
+
+  await db.run(
+    `UPDATE sessions SET ${setClauses.join(', ')} WHERE id = ? AND user_id = ?`,
+    [...vals, id, req.user.id],
+  );
+  const next = await db.get('SELECT * FROM sessions WHERE id = ?', [id]);
   res.json(mapSession(next));
 });
 
-router.delete('/:id', (req, res) => {
-  const db = getDatabase();
+router.delete('/:id', async (req, res) => {
+  const db = await getDatabase();
   const id = parseInt(req.params.id, 10);
-  const info = db.prepare('DELETE FROM sessions WHERE id = ?').run(id);
-  if (Number(info.changes) === 0) {
+  const { changes } = await db.run(
+    'DELETE FROM sessions WHERE id = ? AND user_id = ?',
+    [id, req.user.id],
+  );
+  if (changes === 0) {
     const err = new Error('Session not found');
     err.status = 404;
     throw err;

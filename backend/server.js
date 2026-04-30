@@ -1,15 +1,13 @@
-/**
- * Express API for Hours & Salary Tracker (local full-stack app).
- */
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const express = require('express');
 require('express-async-errors');
 const cors = require('cors');
-const path = require('path');
 const { errorHandler } = require('./middleware/errorHandler');
+const { requireAuth } = require('./middleware/auth');
 const { getDatabase } = require('./db/database');
 
+const authRouter = require('./routes/auth');
 const sessionsRouter = require('./routes/sessions');
 const paymentsRouter = require('./routes/payments');
 const calendarRouter = require('./routes/calendar');
@@ -18,9 +16,6 @@ const reportsRouter = require('./routes/reports');
 const configRouter = require('./routes/config');
 const importRouter = require('./routes/import');
 const adminRouter = require('./routes/admin');
-
-// Touch DB early so migrations run before first request
-getDatabase();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,17 +27,29 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });
 });
 
-app.use('/api/sessions', sessionsRouter);
-app.use('/api/payments', paymentsRouter);
-app.use('/api/calendar', calendarRouter);
-app.use('/api/sync', syncRouter);
-app.use('/api/reports', reportsRouter);
-app.use('/api/config', configRouter);
-app.use('/api/import', importRouter);
-app.use('/api/admin', adminRouter);
+// Public auth routes
+app.use('/api/auth', authRouter);
+
+// All routes below require a valid JWT
+app.use('/api/sessions', requireAuth, sessionsRouter);
+app.use('/api/payments', requireAuth, paymentsRouter);
+app.use('/api/calendar', requireAuth, calendarRouter);
+app.use('/api/sync', requireAuth, syncRouter);
+app.use('/api/reports', requireAuth, reportsRouter);
+app.use('/api/config', requireAuth, configRouter);
+app.use('/api/import', requireAuth, importRouter);
+app.use('/api/admin', requireAuth, adminRouter);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Hours Tracker API listening on http://localhost:${PORT}`);
+async function start() {
+  await getDatabase(); // run migrations before accepting requests
+  app.listen(PORT, () => {
+    console.log(`Hours Tracker API listening on http://localhost:${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });

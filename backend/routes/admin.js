@@ -1,18 +1,9 @@
-/**
- * Admin utilities for local app usage only.
- * POST /api/admin/reset — wipe stored data tables.
- */
 const express = require('express');
 const { getDatabase } = require('../db/database');
 
 const router = express.Router();
 
-/**
- * Body:
- * - confirm: must equal "RESET"
- * - scope: "all" (default) | "sessions"
- */
-router.post('/reset', (req, res) => {
+router.post('/reset', async (req, res) => {
   const body = req.body || {};
   const confirm = String(body.confirm || '').trim();
   const scope = String(body.scope || 'all').trim();
@@ -22,35 +13,23 @@ router.post('/reset', (req, res) => {
     err.status = 400;
     throw err;
   }
-
   if (!['all', 'sessions'].includes(scope)) {
     const err = new Error('scope must be "all" or "sessions"');
     err.status = 400;
     throw err;
   }
 
-  const db = getDatabase();
+  const db = await getDatabase();
+  const userId = req.user.id;
 
-  db.exec('BEGIN IMMEDIATE');
-  try {
-    // Always wipe session-derived tables first (FK-safe ordering).
-    db.exec('DELETE FROM diploma_progress;');
-    db.exec('DELETE FROM sessions;');
-    db.exec('DELETE FROM sync_log;');
-
+  await db.transaction(async (tx) => {
+    await tx.run('DELETE FROM diploma_progress WHERE user_id = ?', [userId]);
+    await tx.run('DELETE FROM sessions WHERE user_id = ?', [userId]);
+    await tx.run('DELETE FROM sync_log WHERE user_id = ?', [userId]);
     if (scope === 'all') {
-      db.exec('DELETE FROM payments;');
+      await tx.run('DELETE FROM payments WHERE user_id = ?', [userId]);
     }
-
-    db.exec('COMMIT');
-  } catch (e) {
-    try {
-      db.exec('ROLLBACK');
-    } catch (_) {
-      /* ignore */
-    }
-    throw e;
-  }
+  });
 
   res.json({ ok: true, scope });
 });
