@@ -323,7 +323,7 @@ function SmartImportWizard({ onResult }) {
                       <div>
                         <Label className="text-xs">Rate type</Label>
                         <select
-                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                          className="flex h-9 w-full rounded-md border border-input bg-surface-elevated px-3 py-1 text-sm shadow-sm dark:text-txt-primary"
                           value={m.rateType}
                           onChange={(e) => updateMapping(idx, 'rateType', e.target.value)}
                         >

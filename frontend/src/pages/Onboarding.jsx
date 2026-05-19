@@ -158,7 +158,7 @@ export function OnboardingWizard() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Acme Corp, My School"
-                  className="w-full bg-transparent text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
+                  className="w-full bg-surface-elevated text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
                   autoFocus
                 />
               </div>
@@ -171,7 +171,7 @@ export function OnboardingWizard() {
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full bg-transparent text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
+                    className="w-full bg-surface-elevated text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
                   >
                     {CURRENCIES.map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -188,7 +188,7 @@ export function OnboardingWizard() {
                     max="28"
                     value={startDay}
                     onChange={(e) => setStartDay(e.target.value)}
-                    className="w-full bg-transparent text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
+                    className="w-full bg-surface-elevated text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
                   />
                   <p className="text-[10px] text-txt-tertiary mt-1">Day 1-28 of each month</p>
                 </div>

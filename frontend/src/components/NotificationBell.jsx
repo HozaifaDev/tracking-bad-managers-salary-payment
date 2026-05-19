@@ -81,12 +81,15 @@ export function NotificationBell() {
                   >
                     <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-warning-bright" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-txt-primary">{c.salaryMonth}</p>
+                      <p className="text-xs font-medium text-txt-primary">{c.salaryLabel || c.salaryMonth}</p>
                       <p className="text-[10px] text-txt-tertiary">
                         {c.cyclePeriod} &middot; {c.daysOverdue} day{c.daysOverdue !== 1 ? 's' : ''} overdue
                       </p>
                       <p className="text-xs font-semibold text-danger-bright">
                         {formatCurrency(c.runningBalance)} owed
+                      </p>
+                      <p className="text-[10px] text-txt-tertiary">
+                        {formatCurrency(c.expectedEarnings)} earned this cycle
                       </p>
                     </div>
                   </div>

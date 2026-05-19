@@ -84,10 +84,10 @@ export function Monthly() {
                       <TableHead>Payment due</TableHead>
                       <TableHead>Sessions</TableHead>
                       <TableHead>Hours</TableHead>
-                      <TableHead>Expected</TableHead>
-                      <TableHead>Cum. earned</TableHead>
-                      <TableHead>Cum. paid</TableHead>
-                      <TableHead>Running balance</TableHead>
+                      <TableHead>Earned</TableHead>
+                      <TableHead>Total earned</TableHead>
+                      <TableHead>Total paid</TableHead>
+                      <TableHead>Owed to you</TableHead>
                       <TableHead />
                     </TableRow>
                   </TableHeader>

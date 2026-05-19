@@ -30,16 +30,22 @@ router.get('/overdue', async (req, res) => {
       const daysOverdue = differenceInDays(today, cycleEnd);
       return {
         salaryMonth: m.salaryMonth,
+        salaryLabel: m.salaryLabel,
         cyclePeriod: m.cyclePeriod,
+        expectedEarnings: m.expectedEarnings,
         runningBalance: m.runningBalance,
         daysOverdue,
       };
     });
 
+  const totalOwed = overdueCycles.length > 0
+    ? overdueCycles[overdueCycles.length - 1].runningBalance
+    : 0;
+
   res.json({
     hasOverdue: overdueCycles.length > 0,
     overdueCount: overdueCycles.length,
-    totalOwed: overdueCycles.reduce((sum, m) => sum + m.runningBalance, 0),
+    totalOwed,
     thresholdDays,
     cycles: overdueCycles,
   });

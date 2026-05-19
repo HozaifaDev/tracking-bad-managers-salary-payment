@@ -55,4 +55,9 @@
     background: hsl(var(--surface-page));
     color: hsl(var(--text-primary));
   }
+
+  select option {
+    background-color: hsl(var(--surface-elevated));
+    color: hsl(var(--text-primary));
+  }
 }

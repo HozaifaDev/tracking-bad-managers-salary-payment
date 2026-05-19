@@ -85,6 +85,17 @@ export function Sessions() {
   const rows = data?.data || [];
   const ft = data?.filterTotals;
 
+  function getEarningsTooltip(row) {
+    const wt = workTypes.find((w) => w.name === row.category);
+    if (!wt) return `${formatCurrency(row.earnings)}`;
+    switch (wt.rate_type) {
+      case 'hourly': return `${formatDurationHours(row.durationHours)} × ${formatCurrency(wt.rate)}/hr = ${formatCurrency(row.earnings)}`;
+      case 'per_session': return `${formatCurrency(wt.rate)} flat per session = ${formatCurrency(row.earnings)}`;
+      case 'milestone': return row.isMilestoneComplete ? `Milestone complete: ${formatCurrency(wt.rate)}` : `Milestone pending (${formatCurrency(wt.rate)} on complete)`;
+      default: return `${formatCurrency(row.earnings)}`;
+    }
+  }
+
   function openEdit(row) {
     setEditRow(row);
     setEditForm({ earnings: row.earnings, note: row.note || '', category: row.category, rateApplied: row.rateApplied, flagged: row.flagged });
@@ -143,7 +154,7 @@ export function Sessions() {
             <Label>Category / Work type</Label>
             {workTypes.length > 0 ? (
               <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                className="flex h-9 w-full rounded-md border border-input bg-surface-elevated px-3 py-1 text-sm shadow-sm dark:text-txt-primary"
                 value={category}
                 onChange={(e) => { setCategory(e.target.value); setPage(1); }}
               >
@@ -186,7 +197,6 @@ export function Sessions() {
                   <TableHead>Title</TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort('category')}>Work type</TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort('duration_hours')}>Hrs</TableHead>
-                  <TableHead className="cursor-pointer" onClick={() => toggleSort('rate_applied')}>Rate</TableHead>
                   <TableHead className="cursor-pointer" onClick={() => toggleSort('earnings')}>Earnings</TableHead>
                   <TableHead>Note</TableHead>
                   <TableHead />
@@ -206,8 +216,7 @@ export function Sessions() {
                       </div>
                     </TableCell>
                     <TableCell>{formatDurationHours(row.durationHours)}</TableCell>
-                    <TableCell>{formatCurrency(row.rateApplied)}</TableCell>
-                    <TableCell className="font-medium">{formatCurrency(row.earnings)}</TableCell>
+                    <TableCell className="font-medium" title={getEarningsTooltip(row)}>{formatCurrency(row.earnings)}</TableCell>
                     <TableCell className="max-w-[120px] truncate text-xs">{row.note}</TableCell>
                     <TableCell className="space-x-1 whitespace-nowrap">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(row)}>
@@ -250,7 +259,7 @@ export function Sessions() {
               <div>
                 <Label>Work type</Label>
                 <select
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                  className="flex h-9 w-full rounded-md border border-input bg-surface-elevated px-3 py-1 text-sm shadow-sm dark:text-txt-primary"
                   value={addForm.workTypeName}
                   onChange={(e) => setAddForm({ ...addForm, workTypeName: e.target.value, isComplete: false })}
                 >
@@ -346,7 +355,7 @@ export function Sessions() {
                 <Label>Work type / Category</Label>
                 {workTypes.length > 0 ? (
                   <select
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                    className="flex h-9 w-full rounded-md border border-input bg-surface-elevated px-3 py-1 text-sm shadow-sm dark:text-txt-primary"
                     value={editForm.category}
                     onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
                   >

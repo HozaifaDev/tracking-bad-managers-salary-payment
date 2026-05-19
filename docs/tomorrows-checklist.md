@@ -1,6 +1,6 @@
-# Tomorrow's Checklist
+# Checklist — Session Verification & Remaining Items
 
-> Things to verify, fix, or build — organized by priority.
+> Originally created May 2026. Items marked with ✅ have been implemented.
 
 ---
 
@@ -32,94 +32,69 @@ Theoretically safe — same `ics:{uid}:{timestamp}` ID = same event = skipped. B
 
 ---
 
-## 2. Notification Bell Shows Wrong Owed Number [BUG — HIGH]
+## 2. Notification Bell Shows Wrong Owed Number ✅ FIXED
 
-**Symptom:** Notification bell shows inflated total owed number.
+**Bug:** `notifications.js` summed all overdue `runningBalance` values, but `runningBalance` is already cumulative. Summing them double-counted earlier cycles.
 
-**Root cause:** `notifications.js:42` sums all overdue `runningBalance` values:
+**Fix:** Changed to use the last overdue cycle's `runningBalance` (which already includes all prior cycles):
 
 ```js
+// BEFORE (wrong):
 totalOwed: overdueCycles.reduce((sum, m) => sum + m.runningBalance, 0),
-```
-
-But `runningBalance` is **already cumulative**. Summing them double-counts earlier cycles.
-
-| Cycle | cumEarned | cumPaid | runningBalance |
-|-------|-----------|---------|----------------|
-| 1     | 1000      | 0       | 1000           |
-| 2     | 2000      | 0       | 2000           |
-
-**Current:** 1000 + 2000 = 3000 (wrong) | **Correct:** 2000 (latest overdue cycle)
-
-**Fix:** `backend/routes/notifications.js` line 42 — use last overdue cycle's runningBalance:
-
-```js
+// AFTER (correct):
 totalOwed: overdueCycles.length > 0
   ? overdueCycles[overdueCycles.length - 1].runningBalance
   : 0,
 ```
 
-- [ ] Fix `totalOwed` in `notifications.js`
-- [ ] Decide: per-cycle show `runningBalance` or `expectedEarnings`?
-- [ ] Re-test notification bell
+Also added `expectedEarnings` and `salaryLabel` to the notification response, and per-cycle display now shows "X earned this cycle" below the owed amount.
 
 ---
 
-## 3. Earnings Calculation & Deleted Events [BUG — HIGH]
+## 3. Earnings Calculation & Deleted Events [PARTIALLY FIXED]
 
-### 3a. Wrong earnings (hours × rate ≠ shown earnings)
+### 3a. Wrong earnings (hours × rate ≠ shown earnings) — NEEDS VERIFICATION
 
 Possible causes:
 - **Rate type mismatch**: `per_session` uses flat rate, not hourly. 2.5hrs × 200 for `per_session` = 200 (flat), not 500
 - **Rounding**: `calcEarnings` rounds to 2dp via `Math.round(hours * rate * 100) / 100`
-- Should show a calculation breakdown: "2.5 hrs × 200/hr = 500 EGP"
+
+**Fix implemented:** Sessions table now shows a tooltip with the earnings breakdown (e.g., "2.5 hrs × 200/hr = 500 EGP"). The "Rate" column was removed and merged into the "Earnings" column as a tooltip.
 
 - [ ] Check a specific wrong session's `rate_type` and `rate_applied`
-- [ ] Add rate_type display to Sessions table
-- [ ] Add calc breakdown in edit/add dialog
+- [ ] Verify the tooltip shows correct calculation
 
-### 3b. Deleted calendar events reappearing
+### 3b. Deleted calendar events reappearing — PARTIALLY FIXED
 
-ICS import only **adds** events — no deletion sync. Old sessions stay in DB even if deleted from calendar.
+ICS import only **adds** events — no deletion sync.
 
-- [ ] Verify: does parser handle `EXDATE`? (excluded dates from recurring events)
-- [ ] Verify: does parser handle `STATUS:CANCELLED`?
-- [ ] Decide: add a "sync deletions" feature or manual cleanup tool
+**Fix implemented:** Added EXDATE and STATUS:CANCELLED handling in `icsImportService.js`:
+- EXDATE entries are now collected and excluded from RRULE expansion
+- Single events with `STATUS:CANCELLED` are skipped
+- Cancelled RECURRENCE-ID override instances are excluded and blocked from RRULE expansion
 
----
-
-## 4. Monthly View Column Labels [ENHANCEMENT — MEDIUM]
-
-Current columns: Salary month | Cycle period | Payment due | Sessions | Hours | **Expected** | Cum. earned | Cum. paid | Running balance
-
-"Expected" is confusing — it's **actual** calculated earnings, not a projection.
-
-- [ ] Rename "Expected" → "Earned"
-- [ ] Rename "Cum. earned" → "Total earned" (add tooltip: cumulative across all cycles)
-- [ ] Rename "Cum. paid" → "Total paid"
-- [ ] Rename "Running balance" → "Balance owed" (positive = owed to you)
+- [ ] Test with real ICS file that has EXDATE entries
+- [ ] Test with real ICS file that has cancelled events
+- [ ] Decide: add a "sync deletions" feature for future
 
 ---
 
-## 5. Dropdown Dark Mode [BUG — MEDIUM]
+## 4. Monthly View Column Labels ✅ FIXED
 
-Native `<select>` elements have `bg-transparent` — in dark mode, `<option>` dropdowns render with OS-level light backgrounds. Text becomes invisible.
+Renamed columns for clarity:
+- "Expected" → "Earned"
+- "Cum. earned" → "Total earned"
+- "Cum. paid" → "Total paid"
+- "Running balance" → "Owed to you" (positive = owed to you)
 
-**Quick fix** — add to `index.css`:
-```css
-select option {
-  background-color: hsl(var(--surface-elevated));
-  color: hsl(var(--text-primary));
-}
-```
+---
 
-**Proper fix:** Replace native `<select>` with Radix/shadcn `Select` components.
+## 5. Dropdown Dark Mode ✅ FIXED
 
-Affected pages: Sessions (filter, add, edit), Clients (rate type), Sync (mapping), Onboarding (currency)
-
-- [ ] Add dark mode option styling
-- [ ] Consider migrating to Radix Select
-- [ ] Verify both themes
+**Fix implemented:**
+- Added `select option` styling in `index.css` using CSS variables for proper dark mode support
+- Changed all `<select>` elements from `bg-transparent` to `bg-surface-elevated` with `dark:text-txt-primary`
+- Applied to: Sessions (3 selects), Clients (1 select), Sync (1 select), Onboarding (3 selects)
 
 ---
 

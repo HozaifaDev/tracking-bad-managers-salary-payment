@@ -79,12 +79,39 @@ function parseIcsToEvents(icsText, tz, range = {}) {
   // Track override instances by (uid + date) to prioritize them over expanded recurrences
   const overrideKeys = new Set();
 
-  // First pass: collect override instances (RECURRENCE-ID) first
+  // Collect EXDATE sets per UID to exclude cancelled/removed instances from recurring series
+  const exdateSets = new Map();
+
+  // First pass: collect EXDATE entries, override instances, and cancelled single events
   for (const key of Object.keys(parsed)) {
     const ev = parsed[key];
     if (!ev || ev.type !== 'VEVENT') continue;
-    if (ev.rrule) continue; // skip template — we expand these separately
+
+    // Skip cancelled single events entirely
+    if (ev.status === 'CANCELLED' || ev.status === 'CANCELLED') continue;
+
     if (ev.datetype === 'date') continue; // all-day events
+
+    // Collect EXDATE entries for recurring events (support both array and single date)
+    if (ev.rrule && ev.exdate) {
+      const uid = ev.uid ? String(ev.uid).replace(/\s/g, '') : '';
+      const dates = [];
+      if (Array.isArray(ev.exdate)) {
+        for (const exd of ev.exdate) {
+          const d = exd instanceof Date ? exd : exd ? new Date(exd) : null;
+          if (d && d.getTime()) dates.push(d.getTime());
+        }
+      } else {
+        const d = ev.exdate instanceof Date ? ev.exdate : ev.exdate ? new Date(ev.exdate) : null;
+        if (d && d.getTime()) dates.push(d.getTime());
+      }
+      if (dates.length > 0 && uid) {
+        const existing = exdateSets.get(uid) || [];
+        exdateSets.set(uid, existing.concat(dates));
+      }
+    }
+
+    if (ev.rrule) continue; // skip template — we expand these separately
 
     const start = ev.start instanceof Date ? ev.start : ev.start ? new Date(ev.start) : null;
     if (!start || !start.getTime()) continue;
@@ -93,6 +120,11 @@ function parseIcsToEvents(icsText, tz, range = {}) {
     if (ev.recurrenceid) {
       const uid = ev.uid ? String(ev.uid).replace(/\s/g, '') : '';
       const overrideKey = `${uid}:${start.getTime()}`;
+      // Cancelled override instances get marked but NOT added to output
+      if (ev.status === 'CANCELLED' || ev.status === 'CANCELLED') {
+        overrideKeys.add(overrideKey);
+        continue;
+      }
       overrideKeys.add(overrideKey);
     }
 
@@ -115,6 +147,9 @@ function parseIcsToEvents(icsText, tz, range = {}) {
     const uid = ev.uid ? String(ev.uid).replace(/\s/g, '') : '';
     const templateStart = ev.start instanceof Date ? ev.start : ev.start ? new Date(ev.start) : null;
     if (!templateStart || !templateStart.getTime()) continue;
+
+    // Look up EXDATE exclusions for this UID
+    const exdates = exdateSets.get(uid) || new Set();
 
     let durationMs = null;
     if (ev.end && ev.end.getTime && (ev.end instanceof Date)) {
@@ -144,6 +179,12 @@ function parseIcsToEvents(icsText, tz, range = {}) {
 
       const overrideKey = `${uid}:${dt.getTime()}`;
       if (overrideKeys.has(overrideKey)) continue; // skip — override instance takes priority
+
+      // Skip EXDATE exclusions (cancelled/removed instances from recurring series)
+      if (exdates.some((ts) => {
+        const diff = Math.abs(dt.getTime() - ts);
+        return diff < 86400000; // within 24h = same calendar date
+      })) continue;
 
       const dateStr = formatInTimeZone(dt, tz, 'yyyy-MM-dd');
       if (fromStr && dateStr < fromStr) continue;
