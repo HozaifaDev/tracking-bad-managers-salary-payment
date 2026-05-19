@@ -10,7 +10,7 @@ export const DialogPortal = DialogPrimitive.Portal;
 export const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn('fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in dark:bg-black/60', className)}
+    className={cn('fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in', className)}
     {...props}
   />
 ));
@@ -21,13 +21,13 @@ export const DialogContent = React.forwardRef(({ className, children, ...props }
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-slate-200 bg-white p-6 shadow-lg duration-200 rounded-lg dark:border-slate-700 dark:bg-slate-800',
+        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-surface-elevated p-6 shadow-lg duration-200 rounded-lg',
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white hover:opacity-100 dark:ring-offset-slate-800">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -39,5 +39,5 @@ export function DialogHeader({ className, ...props }) {
 }
 
 export function DialogTitle({ className, ...props }) {
-  return <DialogPrimitive.Title className={cn('text-lg font-semibold', className)} {...props} />;
+  return <DialogPrimitive.Title className={cn('text-lg font-semibold text-txt-primary', className)} {...props} />;
 }

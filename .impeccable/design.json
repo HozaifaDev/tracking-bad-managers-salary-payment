@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-07T19:30:00Z",
+  "title": "Design System: Hours Tracker",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Electric Teal",
+        "canonical": "oklch(52% 0.135 185)",
+        "tonalRamp": ["#052e2b", "#0a4a44", "#0d8f84", "#14b8a0", "#2cc4b5", "#5eead4", "#99f6e4", "#ccfbf1"]
+      },
+      "accent-bright": {
+        "role": "primary-bright",
+        "displayName": "Electric Teal Bright",
+        "canonical": "oklch(62% 0.14 185)",
+        "tonalRamp": ["#062e2b", "#0c524c", "#1a8a7d", "#2cc4b5", "#54d4c8", "#7ee8dc", "#b0f4ec", "#e0faf6"]
+      },
+      "carbon": {
+        "role": "neutral",
+        "displayName": "Carbon",
+        "canonical": "oklch(14% 0.013 255)",
+        "tonalRamp": ["#0a0c14", "#171c2c", "#2a3040", "#454d60", "#636b80", "#7b8294", "#949aac", "#b0b6c4"]
+      },
+      "glacial": {
+        "role": "neutral",
+        "displayName": "Glacial",
+        "canonical": "oklch(97.5% 0.005 250)",
+        "tonalRamp": ["#3d4556", "#586178", "#757e98", "#959db5", "#b4baca", "#d0d5df", "#e6e9f0", "#f1f4f9"]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Deep Teal Success",
+        "canonical": "oklch(48% 0.12 160)",
+        "tonalRamp": ["#052e24", "#0a5440", "#158a6e", "#22b890", "#4dd9b2", "#7aebca", "#aaf5de", "#d4fcf0"]
+      },
+      "warning": {
+        "role": "semantic",
+        "displayName": "Warm Gold",
+        "canonical": "oklch(55% 0.13 75)",
+        "tonalRamp": ["#2e1f05", "#54400a", "#8a6a14", "#b9850b", "#d4a12e", "#e8be52", "#f2d67e", "#faeba8"]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Coral Red",
+        "canonical": "oklch(50% 0.155 25)",
+        "tonalRamp": ["#2e0a0a", "#541414", "#8a2420", "#c93c37", "#e04e48", "#f06e69", "#f89894", "#fcc5c3"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles. One per page, never repeated." },
+      "headline": { "displayName": "Headline", "purpose": "Card headers and section labels." },
+      "title": { "displayName": "Title", "purpose": "Table headers, form labels, inline section labels." },
+      "body": { "displayName": "Body", "purpose": "Running text, descriptions, table cell content." },
+      "label": { "displayName": "Label", "purpose": "Badges, tags, timestamps, pagination info." }
+    },
+    "shadows": [
+      { "name": "modal-lift", "value": "0 25px 50px -12px rgba(20, 24, 34, 0.25)", "purpose": "Dialogs and overlays. More blur, less offset. The only shadow in the system." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for all state transitions (hover, focus, active)." },
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Dialog/modals enter. Deceleration curve for reveals." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button. Electric teal background, near-white text.",
+      "html": "<button class=\"ds-btn-primary\">Save session</button>",
+      "css": ".ds-btn-primary { background: #0d8f84; color: #f0fefa; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1; border: none; border-radius: 6px; padding: 0 16px; height: 36px; cursor: pointer; transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #0a7a70; } .ds-btn-primary:focus-visible { outline: 2px solid #0d8f84; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action button. Transparent with border stroke.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { background: transparent; color: #171c2c; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1; border: 1px solid #dfe3eb; border-radius: 6px; padding: 0 16px; height: 36px; cursor: pointer; transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-outline:hover { background: #f1f4f9; } .ds-btn-outline:focus-visible { outline: 2px solid #0d8f84; outline-offset: 2px; } @media (prefers-color-scheme: dark) { .ds-btn-outline { border-color: #2a3040; color: #eff1f5; } .ds-btn-outline:hover { background: #1c2130; } }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Content container. Flat, bordered, tonal elevation. No shadow at rest.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">Monthly expected earnings</h3></div><div class=\"ds-card-content\">Content here</div></div>",
+      "css": ".ds-card { background: #f9fafb; border: 1px solid #dfe3eb; border-radius: 8px; color: #171c2c; } .ds-card-header { padding: 24px 24px 0; } .ds-card-title { font-family: Inter, system-ui, sans-serif; font-size: 18px; font-weight: 600; line-height: 1.3; } .ds-card-content { padding: 16px 24px 24px; } @media (prefers-color-scheme: dark) { .ds-card { background: #1c2130; border-color: #2a3040; color: #eff1f5; } }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text input field. Transparent background, border stroke, teal focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Enter amount\" />",
+      "css": ".ds-input { font-family: Inter, system-ui, sans-serif; font-size: 14px; width: 100%; height: 36px; padding: 0 12px; background: transparent; border: 1px solid #dfe3eb; border-radius: 6px; color: #171c2c; outline: none; transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1); } .ds-input::placeholder { color: #7b8294; } .ds-input:focus-visible { border-color: #0d8f84; box-shadow: 0 0 0 2px rgba(13, 143, 132, 0.3); } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; } @media (prefers-color-scheme: dark) { .ds-input { border-color: #2a3040; color: #eff1f5; } .ds-input::placeholder { color: #9198a8; } }"
+    },
+    {
+      "name": "Badge Muted",
+      "kind": "chip",
+      "description": "Muted category/status badge. Tonal fill with muted text.",
+      "html": "<span class=\"ds-badge-muted\">Hourly</span>",
+      "css": ".ds-badge-muted { display: inline-flex; align-items: center; border-radius: 4px; padding: 2px 10px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.02em; background: #f1f4f9; color: #7b8294; border: 1px solid transparent; } @media (prefers-color-scheme: dark) { .ds-badge-muted { background: #2a3040; color: #9198a8; } }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "description": "Sidebar navigation link. Active state uses filled teal background.",
+      "html": "<nav class=\"ds-sidebar-nav\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\">Dashboard</a><a class=\"ds-nav-item\" href=\"#\">Sessions</a></nav>",
+      "css": ".ds-sidebar-nav { display: flex; flex-direction: column; gap: 2px; } .ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 6px; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; color: #7b8294; text-decoration: none; transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-item:hover { background: #f1f4f9; color: #171c2c; } .ds-nav-item:focus-visible { outline: 2px solid #0d8f84; outline-offset: -2px; } .ds-nav-active { background: #0d8f84; color: #f0fefa; } .ds-nav-active:hover { background: #0a7a70; color: #f0fefa; } @media (prefers-color-scheme: dark) { .ds-nav-item { color: #9198a8; } .ds-nav-item:hover { background: #1c2130; color: #eff1f5; } .ds-nav-active { background: #0d8f84; color: #f0fefa; } .ds-nav-active:hover { background: #0a7a70; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Focused Ledger",
+    "overview": "A drafting table under a single focused lamp. Every mark is deliberate. Shadows are soft and ambient, never sharp. Contrast carries the hierarchy. The tool recedes; the numbers stay. This system serves one job: making unpaid hours and owed money instantly legible. The palette is restrained, cool, and precise. One accent (electric teal) marks interactive elements and primary actions. Neutrals are tinted toward blue, never pure gray. Surfaces are flat with tonal shifts rather than shadows. Typography uses weight and size contrast, not color decoration. Components are tight, precise, and predictable.",
+    "keyCharacteristics": [
+      "Restrained color: one accent, tinted neutrals, semantic tones only where data demands",
+      "Flat by default: tonal layering for depth, no shadows at rest",
+      "Tight and precise: 4-6px radii, compact padding, dense information",
+      "Dark-native: both themes designed from scratch, not inversions",
+      "Numbers as the primary visual: weight and size carry the story, not color swatches",
+      "WCAG AAA contrast across all themes"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Electric teal is the only decorative accent. It marks primary buttons, active navigation, links, focus rings, and selection states. No other hue appears as surface decoration. Semantic colors appear only on data values and state indicators.", "section": "colors" },
+      { "name": "The Weight-Step Rule", "body": "Every level transition must include a weight jump of at least 200 (400 to 600, 600 to 700). Flat weight across sizes creates noise, not hierarchy.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. No elevation shadow on cards, no hover shadows on buttons, no shadow on tables. Modal lift is the only exception.", "section": "elevation" }
+    ],
+    "dos": [
+      "Use electric teal as the single accent for all interactive elements",
+      "Use weight jumps (400 to 600 or 600 to 700) to create hierarchy",
+      "Use tonal shifts (4-6% lightness) between page background and card surfaces",
+      "Ensure all color pairs meet WCAG AAA contrast ratios",
+      "Use semantic colors exclusively on data values and state",
+      "Design dark and light themes as equal citizens, not inversions",
+      "Keep spacing rhythm varied: 4, 8, 16, 24, 32, 48"
+    ],
+    "donts": [
+      "Use side-stripe borders (border-left/right wider than 1px) as colored accents on cards or rows",
+      "Create hero-metric cards: big number, small label, gradient accent",
+      "Apply gradient text (background-clip: text with gradient)",
+      "Use shadows on cards or buttons at rest",
+      "Use pure black (#000) or pure white (#fff)",
+      "Use identical-card grids with the same icon-heading-text pattern",
+      "Animate CSS layout properties; state transitions at 150-250ms only",
+      "Use decorative motion that does not convey state",
+      "Use bright pastels, emoji, illustrations, or confetti",
+      "Use the accent color as a background fill for content areas"
+    ]
+  }
+}

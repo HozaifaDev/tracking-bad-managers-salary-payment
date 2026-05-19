@@ -16,18 +16,15 @@ export function ProGate({ feature, children }) {
   if (billing?.isPro) return children;
 
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/40 px-6 py-16 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
-        <Lock className="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
+    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-accent/30 bg-accent/5 px-6 py-16 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10">
+        <Lock className="h-6 w-6 text-accent" />
       </div>
-      <h2 className="mb-1 text-lg font-semibold text-slate-800 dark:text-slate-200">{feature} is a Pro feature</h2>
-      <p className="mb-6 max-w-xs text-sm text-slate-500 dark:text-slate-400">
+      <h2 className="mb-1 text-lg font-semibold text-txt-primary">{feature} is a Pro feature</h2>
+      <p className="mb-6 max-w-xs text-sm text-txt-secondary">
         Upgrade to Pro to unlock {feature.toLowerCase()} along with unlimited clients, Excel exports, demand letters, and email alerts.
       </p>
-      <Button
-        className="bg-indigo-600 hover:bg-indigo-700 text-white"
-        onClick={() => navigate('/billing')}
-      >
+      <Button onClick={() => navigate('/billing')}>
         <Zap className="mr-2 h-4 w-4" />
         Upgrade to Pro
       </Button>

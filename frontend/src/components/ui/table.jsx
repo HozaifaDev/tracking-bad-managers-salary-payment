@@ -19,14 +19,22 @@ export function TableBody({ className, ...props }) {
 }
 
 export function TableRow({ className, ...props }) {
-  return <tr className={cn('border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-700 dark:hover:bg-slate-700/50', className)} {...props} />;
+  return (
+    <tr
+      className={cn(
+        'border-b border-border transition-colors hover:bg-surface-elevated-hover',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function TableHead({ className, ...props }) {
   return (
     <th
       className={cn(
-        'h-10 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400',
+        'h-9 px-3 text-left align-middle text-xs font-semibold uppercase tracking-wide text-txt-tertiary',
         className,
       )}
       {...props}
@@ -35,5 +43,5 @@ export function TableHead({ className, ...props }) {
 }
 
 export function TableCell({ className, ...props }) {
-  return <td className={cn('p-3 align-middle text-slate-700 dark:text-slate-300', className)} {...props} />;
+  return <td className={cn('p-3 align-middle text-txt-primary', className)} {...props} />;
 }

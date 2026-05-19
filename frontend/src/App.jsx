@@ -42,7 +42,9 @@ export default function App() {
         path="/onboarding"
         element={
           <OnboardingRoute>
-            <OnboardingWizard />
+            <ClientProvider>
+              <OnboardingWizard />
+            </ClientProvider>
           </OnboardingRoute>
         }
       />

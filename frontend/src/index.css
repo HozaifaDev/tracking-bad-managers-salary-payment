@@ -4,26 +4,55 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
+    --surface-page: 210 20% 97.5%;
+    --surface-elevated: 210 15% 99%;
+    --surface-elevated-hover: 210 15% 96%;
+    --text-primary: 230 25% 14%;
+    --text-secondary: 230 10% 55%;
+    --text-tertiary: 230 8% 40%;
+    --border-default: 220 14% 88%;
+    --accent: 174 76% 35%;
+    --accent-hover: 174 70% 29%;
+    --accent-bright: 170 60% 44%;
+    --accent-text: 174 76% 92%;
+    --success: 160 72% 32%;
+    --success-bright: 160 55% 42%;
+    --success-bg: 160 50% 94%;
+    --warning: 40 90% 38%;
+    --warning-bright: 40 75% 48%;
+    --warning-bg: 40 90% 94%;
+    --danger: 4 68% 48%;
+    --danger-bright: 4 70% 58%;
+    --danger-bg: 4 80% 94%;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 20% 98%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-    --border: 217 33% 20%;
+    --surface-page: 225 30% 8%;
+    --surface-elevated: 225 25% 11%;
+    --surface-elevated-hover: 225 20% 15%;
+    --text-primary: 220 15% 94%;
+    --text-secondary: 220 10% 60%;
+    --text-tertiary: 220 8% 45%;
+    --border-default: 225 20% 17%;
+    --accent: 174 60% 40%;
+    --accent-hover: 174 55% 35%;
+    --accent-bright: 170 55% 52%;
+    --accent-text: 174 30% 96%;
+    --success: 160 55% 40%;
+    --success-bright: 160 50% 55%;
+    --success-bg: 160 30% 14%;
+    --warning: 40 85% 45%;
+    --warning-bright: 40 80% 55%;
+    --warning-bg: 40 50% 12%;
+    --danger: 4 65% 55%;
+    --danger-bright: 4 60% 63%;
+    --danger-bg: 4 50% 14%;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-  }
-
-  .dark body, body.dark-body {
-    @apply bg-slate-950 text-slate-100;
+    @apply antialiased;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: hsl(var(--surface-page));
+    color: hsl(var(--text-primary));
   }
 }

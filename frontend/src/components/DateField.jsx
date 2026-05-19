@@ -15,7 +15,7 @@ export function DateField({ value, onChange, label }) {
 
   return (
     <div>
-      {label && <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
+      {label && <label className="mb-1 block text-sm font-medium text-txt-primary">{label}</label>}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className={cn('w-full justify-start text-left font-normal')}>

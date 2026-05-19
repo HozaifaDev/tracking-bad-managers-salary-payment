@@ -28,55 +28,55 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface-page flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2 mb-8">
-          <Clock className="h-8 w-8 text-indigo-400" />
-          <span className="text-2xl font-semibold text-white">Hours Tracker</span>
+          <Clock className="h-8 w-8 text-accent" />
+          <span className="text-2xl font-semibold text-txt-primary">Hours Tracker</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-slate-900 rounded-xl p-6 space-y-4 shadow-lg">
-          <h1 className="text-lg font-semibold text-white mb-2">Sign in</h1>
+        <form onSubmit={handleSubmit} className="bg-surface-elevated rounded-lg border border-border p-6 space-y-4">
+          <h1 className="text-lg font-semibold text-txt-primary mb-2">Sign in</h1>
 
           {error && (
-            <div className="bg-rose-950 text-rose-300 text-sm rounded-md px-3 py-2">{error}</div>
+            <div className="bg-danger-bg text-danger-bright text-sm rounded-md px-3 py-2">{error}</div>
           )}
 
           <div className="space-y-1">
-            <label className="text-sm text-slate-400">Email</label>
+            <label className="text-sm text-txt-secondary">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-800 text-white border border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full bg-transparent text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
               placeholder="you@example.com"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm text-slate-400">Password</label>
+            <label className="text-sm text-txt-secondary">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-800 text-white border border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-              placeholder="••••••"
+              className="w-full bg-transparent text-txt-primary border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-page"
+              placeholder="........"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-md py-2 text-sm font-medium transition-colors"
+            className="w-full bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-text rounded-md py-2 text-sm font-medium transition-colors"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-txt-tertiary">
             No account?{' '}
-            <Link to="/register" className="text-indigo-400 hover:text-indigo-300">
+            <Link to="/register" className="text-accent-bright hover:text-accent">
               Register
             </Link>
           </p>

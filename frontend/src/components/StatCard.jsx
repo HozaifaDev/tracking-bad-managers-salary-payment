@@ -1,30 +1,23 @@
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { cn } from '../lib/utils';
 
 export function StatCard({ title, value, subtitle, icon: Icon, tone = 'default' }) {
-  const toneCls =
-    tone === 'earned'
-      ? 'text-emerald-600'
-      : tone === 'paid'
-        ? 'text-blue-600'
-        : tone === 'balance-owed'
-          ? 'text-rose-600'
-          : tone === 'balance-ok'
-            ? 'text-emerald-600'
-            : tone === 'overpaid'
-              ? 'text-amber-600'
-              : 'text-slate-900 dark:text-slate-100';
+  const valueClass = {
+    earned: 'text-success',
+    paid: 'text-accent',
+    'balance-owed': 'text-danger',
+    'balance-ok': 'text-success',
+    overpaid: 'text-warning',
+    default: 'text-txt-primary',
+  }[tone];
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</CardTitle>
-        {Icon && <Icon className={cn('h-5 w-5 text-slate-400 dark:text-slate-500', toneCls)} />}
-      </CardHeader>
-      <CardContent>
-        <div className={cn('text-3xl font-bold', toneCls)}>{value}</div>
-        {subtitle && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border border-border bg-surface-elevated px-6 py-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium uppercase tracking-wide text-txt-tertiary">{title}</span>
+        {Icon && <Icon className={cn('h-4 w-4', valueClass)} />}
+      </div>
+      <div className={cn('text-3xl font-bold tabular-nums tracking-tight', valueClass)}>{value}</div>
+      {subtitle && <p className="mt-1.5 text-xs text-txt-tertiary">{subtitle}</p>}
+    </div>
   );
 }

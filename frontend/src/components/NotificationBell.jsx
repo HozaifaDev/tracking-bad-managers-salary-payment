@@ -36,14 +36,14 @@ export function NotificationBell() {
         className={cn(
           'flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs transition-colors',
           hasOverdue
-            ? 'text-rose-300 hover:bg-rose-950/50'
-            : 'text-slate-400 hover:bg-slate-800 hover:text-white',
+            ? 'text-danger-bright hover:bg-danger-bg'
+            : 'text-txt-secondary hover:bg-surface-elevated-hover hover:text-txt-primary',
         )}
       >
         <div className="relative">
           <Bell className="h-3.5 w-3.5" />
           {overdueCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white">
+            <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[8px] font-bold text-white">
               {overdueCount > 9 ? '9+' : overdueCount}
             </span>
           )}
@@ -52,23 +52,23 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 rounded-lg border border-slate-700 bg-slate-800 shadow-xl z-50">
-          <div className="flex items-center justify-between border-b border-slate-700 px-3 py-2">
-            <h3 className="text-xs font-semibold text-slate-200">Overdue Cycles</h3>
-            <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-white">
+        <div className="absolute bottom-full left-0 mb-2 w-72 rounded-lg border border-border bg-surface-elevated shadow-xl z-50">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2">
+            <h3 className="text-xs font-semibold text-txt-primary">Overdue Cycles</h3>
+            <button onClick={() => setOpen(false)} className="text-txt-secondary hover:text-txt-primary">
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
 
           <div className="max-h-64 overflow-y-auto">
             {isLoading && (
-              <div className="px-3 py-4 text-center text-xs text-slate-400">Loading...</div>
+              <div className="px-3 py-4 text-center text-xs text-txt-tertiary">Loading...</div>
             )}
 
             {!isLoading && !hasOverdue && (
               <div className="px-3 py-4 text-center">
-                <Bell className="mx-auto h-6 w-6 text-emerald-400 mb-1" />
-                <p className="text-xs text-slate-400">All cycles are up to date</p>
+                <Bell className="mx-auto h-6 w-6 text-success-bright mb-1" />
+                <p className="text-xs text-txt-tertiary">All cycles are up to date</p>
               </div>
             )}
 
@@ -77,15 +77,15 @@ export function NotificationBell() {
                 {cycles.map((c) => (
                   <div
                     key={c.salaryMonth}
-                    className="flex items-start gap-2 border-b border-slate-700/50 px-3 py-2 last:border-b-0"
+                    className="flex items-start gap-2 border-b border-border px-3 py-2 last:border-b-0"
                   >
-                    <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-rose-400" />
+                    <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-warning-bright" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-slate-200">{c.salaryMonth}</p>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-xs font-medium text-txt-primary">{c.salaryMonth}</p>
+                      <p className="text-[10px] text-txt-tertiary">
                         {c.cyclePeriod} &middot; {c.daysOverdue} day{c.daysOverdue !== 1 ? 's' : ''} overdue
                       </p>
-                      <p className="text-xs font-semibold text-rose-300">
+                      <p className="text-xs font-semibold text-danger-bright">
                         {formatCurrency(c.runningBalance)} owed
                       </p>
                     </div>
@@ -96,10 +96,10 @@ export function NotificationBell() {
           </div>
 
           {hasOverdue && (
-            <div className="border-t border-slate-700 px-3 py-2">
-              <p className="text-xs text-slate-300">
+            <div className="border-t border-border px-3 py-2">
+              <p className="text-xs text-txt-secondary">
                 Total overdue:{' '}
-                <span className="font-semibold text-rose-300">{formatCurrency(totalOwed)}</span>
+                <span className="font-semibold text-danger-bright">{formatCurrency(totalOwed)}</span>
               </p>
             </div>
           )}
