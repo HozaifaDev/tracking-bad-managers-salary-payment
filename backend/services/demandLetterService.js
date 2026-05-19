@@ -138,8 +138,8 @@ async function buildDemandLetterPdf({ userId, clientId }) {
   doc.fontSize(10).font('Helvetica-Bold').fillColor(SLATE9).text('OUTSTANDING CYCLES', 50, y);
   y += 16;
 
-  const OW = [90, 76, 76, 76, 76, 100];
-  tableRow(doc, ['Salary Month', 'Expected', 'Paid', 'Outstanding', 'Days Overdue', 'Cycle Ended'],
+  const OW = [90, 76, 76, 76, 76, 100, 86];
+  tableRow(doc, ['Salary Month', 'Expected', 'Paid', 'Outstanding', 'Days Overdue', 'Cycle Ended', 'Payment Due'],
     y, OW, { bold: true, bg: '#fff1f2', fontSize: 8 });
   y += 18;
 
@@ -147,8 +147,8 @@ async function buildDemandLetterPdf({ userId, clientId }) {
     if (y > doc.page.height - 80) { doc.addPage(); y = 50; }
     tableRow(
       doc,
-      [m.salaryMonth, fmt(m.expectedEarnings, currency), fmt(m.cumulativePaid, currency),
-       fmt(m.runningBalance, currency), `${m.daysOverdue} days`, m.cycleEnd],
+      [m.salaryLabel || m.salaryMonth, fmt(m.expectedEarnings, currency), fmt(m.cumulativePaid, currency),
+       fmt(m.runningBalance, currency), `${m.daysOverdue}d`, m.cycleEnd, m.paymentDueLabel || ''],
       y, OW,
       { bg: i % 2 === 1 ? '#fafafa' : null, color: i >= 0 ? SLATE9 : SLATE9, fontSize: 8 },
     );

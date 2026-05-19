@@ -35,8 +35,8 @@ export function Dashboard() {
   const monthly = qMonthly.data || [];
   const recent = qRecent.isSuccess ? (qRecent.data?.data || []).slice(0, 10) : [];
 
-  const barData = monthly.map((m) => ({ name: m.salaryMonth, earned: m.expectedEarnings }));
-  const lineData = monthly.map((m) => ({ name: m.salaryMonth, earned: m.cumulativeEarned, paid: m.cumulativePaid }));
+  const barData = monthly.map((m) => ({ name: m.salaryLabel || m.salaryMonth, earned: m.expectedEarnings }));
+  const lineData = monthly.map((m) => ({ name: m.salaryLabel || m.salaryMonth, earned: m.cumulativeEarned, paid: m.cumulativePaid }));
 
   const balanceTone = !s ? 'default' : s.balance > 0 ? 'balance-owed' : s.balance < 0 ? 'overpaid' : 'balance-ok';
   const balanceLabel = !s ? '' : s.balance > 0 ? 'You are owed' : s.balance < 0 ? 'Overpaid by' : 'Balanced';

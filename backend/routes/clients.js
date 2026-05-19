@@ -10,6 +10,8 @@ function mapClient(r) {
     name: r.name,
     currency: r.currency,
     workCycleStartDay: r.work_cycle_start_day,
+    paymentDueStartDay: r.payment_due_start_day ?? 1,
+    paymentDueEndDay: r.payment_due_end_day ?? 5,
     config: tryParseJson(r.config_json),
     isDefault: Boolean(r.is_default),
     createdAt: r.created_at,
@@ -96,15 +98,16 @@ router.put('/:id', async (req, res) => {
     throw err;
   }
 
-  const b = req.body || {};
   const name = b.name !== undefined ? String(b.name).trim() : row.name;
   const currency = b.currency !== undefined ? String(b.currency).trim() : row.currency;
   const startDay = b.workCycleStartDay !== undefined ? Number(b.workCycleStartDay) : row.work_cycle_start_day;
+  const dueStartDay = b.paymentDueStartDay !== undefined ? Number(b.paymentDueStartDay) : (row.payment_due_start_day ?? 1);
+  const dueEndDay = b.paymentDueEndDay !== undefined ? Number(b.paymentDueEndDay) : (row.payment_due_end_day ?? 5);
   const configJson = b.config !== undefined ? JSON.stringify(b.config) : row.config_json;
 
   await db.run(
-    'UPDATE clients SET name = ?, currency = ?, work_cycle_start_day = ?, config_json = ? WHERE id = ? AND user_id = ?',
-    [name, currency, startDay, configJson, id, req.user.id],
+    'UPDATE clients SET name = ?, currency = ?, work_cycle_start_day = ?, payment_due_start_day = ?, payment_due_end_day = ?, config_json = ? WHERE id = ? AND user_id = ?',
+    [name, currency, startDay, dueStartDay, dueEndDay, configJson, id, req.user.id],
   );
   const next = await db.get('SELECT * FROM clients WHERE id = ?', [id]);
   res.json(mapClient(next));

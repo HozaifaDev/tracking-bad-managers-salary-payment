@@ -176,6 +176,8 @@ async function runMigrations(db) {
     'ALTER TABLE sessions ADD COLUMN client_id INTEGER',
     'ALTER TABLE payments ADD COLUMN client_id INTEGER',
     'ALTER TABLE diploma_progress ADD COLUMN client_id INTEGER',
+    'ALTER TABLE clients ADD COLUMN payment_due_start_day INTEGER DEFAULT 1',
+    'ALTER TABLE clients ADD COLUMN payment_due_end_day INTEGER DEFAULT 5',
   ];
   for (const sql of alterations) {
     try { await db.exec(sql); } catch (_) { /* column already exists */ }

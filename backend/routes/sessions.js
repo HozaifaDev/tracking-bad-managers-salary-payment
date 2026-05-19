@@ -174,6 +174,28 @@ router.put('/:id', async (req, res) => {
   res.json(mapSession(next));
 });
 
+router.delete('/uncategorized', async (req, res) => {
+  const db = await getDatabase();
+  const userId = req.user.id;
+  const clientId = req.query.clientId ? Number(req.query.clientId) : null;
+
+  const conditions = ['user_id = ?', "category = 'Uncategorized'", 'flagged = 1'];
+  const params = [userId];
+
+  if (clientId) {
+    conditions.push('client_id = ?');
+    params.push(clientId);
+  }
+
+  const where = conditions.join(' AND ');
+  const { changes } = await db.run(
+    `DELETE FROM sessions WHERE ${where}`,
+    params,
+  );
+
+  res.json({ deleted: changes });
+});
+
 router.delete('/:id', async (req, res) => {
   const db = await getDatabase();
   const id = parseInt(req.params.id, 10);

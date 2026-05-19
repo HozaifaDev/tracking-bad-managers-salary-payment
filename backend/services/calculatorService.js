@@ -27,6 +27,27 @@ function getCycleRange(salaryMonthLabel, startDay = 25) {
   };
 }
 
+/**
+ * Compute the payment due window for a salary cycle.
+ * The payment is due between the `dueStart`th and `dueEnd`th of the month
+ * AFTER the cycle ends.
+ *
+ * @param {string} salaryMonthLabel - e.g. "April 2025"
+ * @param {number} [dueStart=1] - Day of month when payment window opens (default 1)
+ * @param {number} [dueEnd=5] - Day of month when payment window closes (default 5)
+ * @returns {{ paymentDueStart: string, paymentDueEnd: string, paymentDueLabel: string }}
+ */
+function getPaymentDueWindow(salaryMonthLabel, dueStart = 1, dueEnd = 5) {
+  const endMonthDate = parse(salaryMonthLabel, 'MMMM yyyy', new Date(), { locale: enUS });
+  const paymentMonth = addMonths(endMonthDate, 1);
+  const y = paymentMonth.getFullYear();
+  const m = paymentMonth.getMonth();
+  const paymentDueStart = format(new Date(y, m, dueStart), 'yyyy-MM-dd');
+  const paymentDueEnd = format(new Date(y, m, dueEnd), 'yyyy-MM-dd');
+  const paymentDueLabel = `${format(new Date(y, m, dueStart), 'MMM d', { locale: enUS })} – ${format(new Date(y, m, dueEnd), 'MMM d, yyyy', { locale: enUS })}`;
+  return { paymentDueStart, paymentDueEnd, paymentDueLabel };
+}
+
 // ─── Generic work-type logic ──────────────────────────────────────────────────
 
 /**
@@ -41,6 +62,36 @@ function matchWorkType(title, workTypes = []) {
   }
   for (const wt of workTypes) {
     if (lower.includes(wt.name.toLowerCase())) return wt;
+  }
+  return null;
+}
+
+/**
+ * Match a title against import mappings (keyword-based).
+ * Returns the first mapping whose keyword is found in the title (case-insensitive).
+ * Also extracts a sub-category if delimiter is found after the keyword.
+ *
+ * @param {string} title - The event title
+ * @param {Array<{ keyword: string, workTypeName: string, rateType: string, rate: number, delimiter?: string }>} mappings
+ * @returns {{ mapping: object, subCategory: string|null } | null}
+ */
+function matchWorkTypeByKeyword(title, mappings = []) {
+  if (!mappings || !mappings.length) return null;
+  const t = String(title || '').trim();
+  const lower = t.toLowerCase();
+  for (const m of mappings) {
+    const kw = String(m.keyword || '').trim();
+    if (!kw) continue;
+    if (lower.includes(kw.toLowerCase())) {
+      const delimiter = m.delimiter || ' - ';
+      let subCategory = null;
+      const kwStartIdx = lower.indexOf(kw.toLowerCase());
+      const afterKw = t.slice(kwStartIdx + kw.length);
+      if (afterKw.startsWith(delimiter)) {
+        subCategory = afterKw.slice(delimiter.length).trim() || null;
+      }
+      return { mapping: m, subCategory };
+    }
   }
   return null;
 }
@@ -145,10 +196,15 @@ function findPrivateOverride(overrides, courseKey, fullTitle) {
  * clientConfig shape:
  *   { work_cycle_start_day, timezone, currency, work_types: [{name, rate_type, rate, color}] }
  *
+ * importMapping (optional) shape:
+ *   { keyword, workTypeName, rateType, rate, delimiter }
+ *   When provided, takes priority over work_types matching.
+ *   Extracts sub_category from the title using keyword + delimiter.
+ *
  * When work_types is populated the new generic logic runs.
  * When empty / absent, falls back to legacy classifyTitle + config.groups / diplomas / private_courses.
  */
-function buildSessionRow(rawEvent, clientConfig = {}) {
+function buildSessionRow(rawEvent, clientConfig = {}, importMapping = null) {
   const startDay = Number(clientConfig.work_cycle_start_day) || 25;
   const title = rawEvent.title;
   const dateStr = rawEvent.date;
@@ -157,6 +213,42 @@ function buildSessionRow(rawEvent, clientConfig = {}) {
 
   const salaryMonth = getSalaryMonth(dateStr, startDay);
   const { start: cycleStart, end: cycleEnd } = getCycleRange(salaryMonth, startDay);
+
+  // ── Import mapping path (highest priority) ─────────────────────────────────
+  if (importMapping) {
+    const kwResult = matchWorkTypeByKeyword(title, [importMapping]);
+    const m = kwResult ? kwResult.mapping : importMapping;
+    const subCategory = kwResult ? kwResult.subCategory : null;
+    const isComplete = titleIsComplete(title);
+    const workType = { name: m.workTypeName, rate_type: m.rateType, rate: m.rate };
+    const earnings = calcEarnings(durationHours, workType, isComplete);
+    const rateApplied = workType.rate_type === 'hourly' ? (workType.rate || 0) : 0;
+    let note = '';
+    if (workType.rate_type === 'milestone' && !isComplete) {
+      note = `${workType.name} — payout on completion`;
+    }
+
+    return {
+      calendar_event_id: rawEvent.calendarEventId,
+      title,
+      date: dateStr,
+      day_of_week: rawEvent.dayOfWeek,
+      start_time: rawEvent.startTime,
+      end_time: rawEvent.endTime,
+      duration_hours: durationHours,
+      category: workType.name,
+      sub_category: subCategory,
+      milestone: workType.rate_type === 'milestone' ? title : null,
+      is_milestone_complete: isComplete ? 1 : 0,
+      rate_applied: rateApplied,
+      earnings,
+      salary_month: salaryMonth,
+      cycle_start: cycleStart,
+      cycle_end: cycleEnd,
+      note,
+      flagged: 0,
+    };
+  }
 
   // ── New generic path ────────────────────────────────────────────────────────
   if (workTypes.length > 0) {
@@ -344,8 +436,10 @@ function buildManualRawEvent({ date, title, durationHours, workTypeName, isCompl
 module.exports = {
   getSalaryMonth,
   getCycleRange,
+  getPaymentDueWindow,
   classifyTitle,
   matchWorkType,
+  matchWorkTypeByKeyword,
   calcEarnings,
   buildSessionRow,
   buildManualRawEvent,

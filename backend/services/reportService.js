@@ -47,15 +47,15 @@ async function buildWorkbook({ from, to, userId, clientId } = {}) {
 
   // Monthly sheet
   const ws2 = wb.addWorksheet('Monthly Breakdown', { views: [{ state: 'frozen', ySplit: 1 }] });
-  ws2.addRow(['Salary Month', 'Cycle Period', 'Sessions', 'Hours', 'Expected Earnings', 'Cumulative Earned', 'Cumulative Paid', 'Running Balance']);
+  ws2.addRow(['Salary Month', 'Cycle Period', 'Payment Due', 'Sessions', 'Hours', 'Expected Earnings', 'Cumulative Earned', 'Cumulative Paid', 'Running Balance']);
   ws2.getRow(1).font = { bold: true };
   monthly.forEach((m, i) => {
-    const r = ws2.addRow([m.salaryMonth, m.cyclePeriod, m.sessionsCount, m.totalHours, m.expectedEarnings, m.cumulativeEarned, m.cumulativePaid, m.runningBalance]);
+    const r = ws2.addRow([m.salaryLabel || m.salaryMonth, m.cyclePeriod, m.paymentDueLabel || '', m.sessionsCount, m.totalHours, m.expectedEarnings, m.cumulativeEarned, m.cumulativePaid, m.runningBalance]);
     if (i % 2 === 1) r.eachCell((c) => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } }; });
-    const bal = r.getCell(8);
+    const bal = r.getCell(9);
     bal.numFmt = EGP_FMT;
     if (m.runningBalance > 0) bal.font = { color: { argb: 'FFCC0000' } };
-    [5, 6, 7, 8].forEach((c) => { r.getCell(c).numFmt = EGP_FMT; });
+    [6, 7, 8, 9].forEach((c) => { r.getCell(c).numFmt = EGP_FMT; });
   });
 
   // Sessions sheet
