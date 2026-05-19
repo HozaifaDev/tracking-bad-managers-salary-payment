@@ -77,27 +77,29 @@ export function Monthly() {
           </CardHeader>
           <CardContent>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Salary month</TableHead>
-                  <TableHead>Cycle period</TableHead>
-                  <TableHead>Sessions</TableHead>
-                  <TableHead>Hours</TableHead>
-                  <TableHead>Expected</TableHead>
-                  <TableHead>Cum. earned</TableHead>
-                  <TableHead>Cum. paid</TableHead>
-                  <TableHead>Running balance</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
+<TableHeader>
+                    <TableRow>
+                      <TableHead>Salary month</TableHead>
+                      <TableHead>Cycle period</TableHead>
+                      <TableHead>Payment due</TableHead>
+                      <TableHead>Sessions</TableHead>
+                      <TableHead>Hours</TableHead>
+                      <TableHead>Expected</TableHead>
+                      <TableHead>Cum. earned</TableHead>
+                      <TableHead>Cum. paid</TableHead>
+                      <TableHead>Running balance</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
               <TableBody>
                 {(data || []).map((m) => (
                   <TableRow
                     key={m.salaryMonth}
                     className={m.runningBalance > 0 ? 'border-l-4 border-l-rose-400 bg-rose-50/30 dark:bg-rose-950/30' : ''}
                   >
-                    <TableCell className="font-medium">{m.salaryMonth}</TableCell>
+                    <TableCell className="font-medium">{m.salaryLabel || m.salaryMonth}</TableCell>
                     <TableCell className="text-xs text-slate-600 dark:text-slate-400">{m.cyclePeriod}</TableCell>
+                    <TableCell className="text-xs text-slate-600 dark:text-slate-400">{m.paymentDueLabel || '–'}</TableCell>
                     <TableCell>{m.sessionsCount}</TableCell>
                     <TableCell>{m.totalHours.toFixed(2)}</TableCell>
                     <TableCell>{formatCurrency(m.expectedEarnings)}</TableCell>

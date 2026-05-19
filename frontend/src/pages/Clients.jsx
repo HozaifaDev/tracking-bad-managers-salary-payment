@@ -94,6 +94,8 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
   const [name, setName] = useState(initial?.name || '');
   const [currency, setCurrency] = useState(initial?.currency || 'EGP');
   const [startDay, setStartDay] = useState(initial?.workCycleStartDay ?? 25);
+  const [dueStartDay, setDueStartDay] = useState(initial?.paymentDueStartDay ?? 1);
+  const [dueEndDay, setDueEndDay] = useState(initial?.paymentDueEndDay ?? 5);
   const [timezone, setTimezone] = useState(initial?.config?.timezone || 'Africa/Cairo');
   const [workTypes, setWorkTypes] = useState(initial?.config?.work_types || []);
   const [showConfig, setShowConfig] = useState(false);
@@ -104,6 +106,8 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
       name: name.trim(),
       currency: currency.trim() || 'EGP',
       workCycleStartDay: Number(startDay) || 25,
+      paymentDueStartDay: Number(dueStartDay) || 1,
+      paymentDueEndDay: Number(dueEndDay) || 5,
       config: { timezone, work_cycle_start_day: Number(startDay) || 25, currency, work_types: workTypes },
     });
   }
@@ -123,6 +127,21 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
           <Label>Cycle start day</Label>
           <Input type="number" min="1" max="28" value={startDay}
             onChange={(e) => setStartDay(e.target.value)} />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Payment due start day</Label>
+          <Input type="number" min="1" max="28" value={dueStartDay}
+            onChange={(e) => setDueStartDay(e.target.value)} />
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Day of month when payment window opens (e.g. 1 = 1st of next month)</p>
+        </div>
+        <div>
+          <Label>Payment due end day</Label>
+          <Input type="number" min="1" max="28" value={dueEndDay}
+            onChange={(e) => setDueEndDay(e.target.value)} />
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Day of month when payment window closes (e.g. 5 = 5th of next month)</p>
         </div>
       </div>
 
@@ -236,9 +255,9 @@ export function Clients() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {c.currency} · cycle day {c.workCycleStartDay} · {workTypes.length} work type{workTypes.length !== 1 ? 's' : ''}
-                    </span>
+<span className="text-xs text-slate-500 dark:text-slate-400">
+                        {c.currency} · cycle day {c.workCycleStartDay} · due {c.paymentDueStartDay}–{c.paymentDueEndDay} · {workTypes.length} work type{workTypes.length !== 1 ? 's' : ''}
+                      </span>
                     {!c.isDefault && (
                       <Button variant="outline" size="sm" onClick={() => mutSetDefault.mutate(c.id)}>
                         <Star className="mr-1 h-3.5 w-3.5" />Set default

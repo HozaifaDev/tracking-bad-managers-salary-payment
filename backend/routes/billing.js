@@ -17,7 +17,7 @@ router.get('/status', async (req, res) => {
   res.json({
     plan,
     subscriptionStatus: status,
-    isPro: plan === 'pro' && ['active', 'cancelled'].includes(status),
+    isPro: plan === 'pro' && (!status || ['active', 'cancelled'].includes(status)),
     hasCustomer: !!user?.ls_customer_id,
   });
 });

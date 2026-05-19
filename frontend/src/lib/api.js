@@ -94,6 +94,11 @@ export async function updateSession(id, body) {
 export async function deleteSession(id) {
   await api.delete(`/sessions/${id}`);
 }
+export async function deleteUncategorizedSessions(clientId) {
+  const params = clientId ? { clientId } : {};
+  const { data } = await api.delete('/sessions/uncategorized', { params });
+  return data;
+}
 
 // Payments
 export async function getPayments(clientId) {
@@ -145,6 +150,43 @@ export async function importIcsPaste(ics, { from, to } = {}) {
   if (from) payload.from = from;
   if (to) payload.to = to;
   const { data } = await api.post('/import/ics', payload);
+  return data;
+}
+
+// ICS smart import (preview + confirm)
+export async function previewIcsFile(file, { from, to, clientId, delimiter } = {}) {
+  const form = new FormData();
+  form.append('file', file);
+  const params = {};
+  if (from) params.from = from;
+  if (to) params.to = to;
+  if (clientId) params.clientId = clientId;
+  if (delimiter) params.delimiter = delimiter;
+  const { data } = await axios.post('/api/import/ics/preview', form, {
+    params,
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  return data;
+}
+export async function previewIcsPaste(ics, { from, to, clientId, delimiter } = {}) {
+  const payload = { ics };
+  if (from) payload.from = from;
+  if (to) payload.to = to;
+  if (clientId) payload.clientId = clientId;
+  if (delimiter) payload.delimiter = delimiter;
+  const { data } = await api.post('/import/ics/preview', payload);
+  return data;
+}
+export async function confirmIcsImport({ ics, clientId, from, to, delimiter, mappings, skippedTitles }) {
+  const { data } = await api.post('/import/ics/confirm', {
+    ics,
+    clientId,
+    from,
+    to,
+    delimiter,
+    mappings,
+    skippedTitles,
+  });
   return data;
 }
 

@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const { parse } = require('date-fns');
 const { getDatabase } = require('../db/database');
 const { getMonthlyBreakdown } = require('./balancerService');
-const { getCycleRange } = require('./calculatorService');
+const { getCycleRange, getPaymentDueWindow } = require('./calculatorService');
 
 const INDIGO = '#4f46e5';
 const SLATE9 = '#0f172a';
@@ -52,9 +52,12 @@ async function buildInvoicePdf({ userId, salaryMonth, clientId }) {
   }
   const currency = (client && client.currency) || clientConfig.currency || 'EGP';
   const startDay = (client && client.work_cycle_start_day) || Number(clientConfig.work_cycle_start_day) || 25;
+  const dueStartDay = (client && client.payment_due_start_day) || 1;
+  const dueEndDay = (client && client.payment_due_end_day) || 5;
 
   const user = await db.get('SELECT id, email, name FROM users WHERE id = ?', [userId]);
   const { start, end } = getCycleRange(salaryMonth, startDay);
+  const { paymentDueStart, paymentDueEnd, paymentDueLabel } = getPaymentDueWindow(salaryMonth, dueStartDay, dueEndDay);
 
   const sessionFilter = client
     ? 'user_id = ? AND client_id = ? AND salary_month = ?'
@@ -108,9 +111,10 @@ async function buildInvoicePdf({ userId, salaryMonth, clientId }) {
 
   doc.fontSize(9).font('Helvetica').fillColor(SLATE9)
     .text(cycleData.cyclePeriod, 320, y)
-    .text(`Salary month: ${salaryMonth}`, 320, y + 13);
+    .text(`Salary month: ${salaryMonth}`, 320, y + 13)
+    .text(`Payment due: ${paymentDueLabel}`, 320, y + 26);
 
-  y += client ? 56 : 44;
+  y += client ? 68 : 56;
   drawHRule(doc, y);
 
   // Summary

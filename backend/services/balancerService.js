@@ -1,6 +1,6 @@
 const { parse, format } = require('date-fns');
 const { enUS } = require('date-fns/locale');
-const { getCycleRange } = require('./calculatorService');
+const { getCycleRange, getPaymentDueWindow } = require('./calculatorService');
 
 async function getAllTimeSummary(db, userId, clientId) {
   const clientFilter = clientId ? ' AND client_id = ?' : '';
@@ -38,11 +38,17 @@ function monthSortKey(label, startDay) {
 }
 
 async function getMonthlyBreakdown(db, userId, clientId) {
-  // Determine work_cycle_start_day: prefer per-client, fall back to 25
+  // Determine work_cycle_start_day and payment due days: prefer per-client, fall back to defaults
   let startDay = 25;
+  let dueStartDay = 1;
+  let dueEndDay = 5;
   if (clientId) {
-    const client = await db.get('SELECT work_cycle_start_day FROM clients WHERE id = ? AND user_id = ?', [clientId, userId]);
-    if (client) startDay = Number(client.work_cycle_start_day) || 25;
+    const client = await db.get('SELECT work_cycle_start_day, payment_due_start_day, payment_due_end_day FROM clients WHERE id = ? AND user_id = ?', [clientId, userId]);
+    if (client) {
+      startDay = Number(client.work_cycle_start_day) || 25;
+      dueStartDay = Number(client.payment_due_start_day) || 1;
+      dueEndDay = Number(client.payment_due_end_day) || 5;
+    }
   }
 
   const clientFilter = clientId ? ' AND client_id = ?' : '';
@@ -85,11 +91,16 @@ async function getMonthlyBreakdown(db, userId, clientId) {
     cumPaid = Math.round(cumPaid * 100) / 100;
 
     const startD = parse(start, 'yyyy-MM-dd', new Date());
+    const { paymentDueStart, paymentDueEnd, paymentDueLabel } = getPaymentDueWindow(salaryMonth, dueStartDay, dueEndDay);
     rows.push({
       salaryMonth,
+      salaryLabel: `${salaryMonth} Salary`,
       cyclePeriod: `${format(startD, 'MMM d', { locale: enUS })} – ${format(cycleEnd, 'MMM d, yyyy', { locale: enUS })}`,
       cycleStart: start,
       cycleEnd: end,
+      paymentDueStart,
+      paymentDueEnd,
+      paymentDueLabel,
       sessionsCount: agg.c,
       totalHours: hours,
       expectedEarnings: expected,
